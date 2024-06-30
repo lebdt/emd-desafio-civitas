@@ -80,7 +80,7 @@ A velocidade máxima é a mais indicada nesse caso para assegurar que o limiar d
 
 ## Possíveis Abordagens para Cálculo da Distância
 
-Aproximação para o raio da Terra. Raio médio $R = 6371\,\mathrm{km}$
+Aproximação para o raio da Terra. Raio médio $R = 6371\mathrm{ km}$
 
 1. **Método da distância geográfica (Leva em conta a elipticidade da Terra)**
 
@@ -90,17 +90,17 @@ Aproximação para o raio da Terra. Raio médio $R = 6371\,\mathrm{km}$
 
 O método escolhido na verdade é o método para calcular distâncias em um plano, considerando latitude e longitude como coordenadas nesse plano acrescidas de uma constante que, com o ângulo (latitude/longitude) produz arco de circunferência.
 
-Nesse caso $\piR / 180^{\circ}$, onde $\pi$ foi aproximado para $3.14$.
+Nesse caso $\pi R / 180^{\circ}$, onde $\pi$ foi aproximado para $3.14$.
 
 $$
-\frac{\pi R}{180^{\circ}}\sqrt{(lat_1 - lat_2)^2 + (lon1 - lon2)^2}
+\frac{\pi R}{180^{\circ}}\sqrt{(lat_1 - lat_2)^2 + (lon_1 - lon_2)^2}
 $$
 
 Apesar de ser um método 'grosseiro' a primeira vista, as distâncias são minúsculas em relação à circuferência terrestre, ainda é o método que dispensa o uso de funções trigonométricas que pode torná-lo mais legível e como estamos lindando com um conjunto de centenas de milhões de linhas, qualquer pequena otimização pode ser vantajosa em uma consulta.
 
 Por meio de alguns testes dentro das coordenadas do estado do Rio de Janeiro. o erro em relação ao resultado de maior precisão (Método 1) obtido esteve no seguinte.
 
-$ 0.02 < \varepsilon < 0.09 $
+$0.02 < \varepsilon < 0.09$
 
 
 # Query Principal
