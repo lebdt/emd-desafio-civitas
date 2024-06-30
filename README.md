@@ -7,12 +7,12 @@ Seria impossível percorrer a distância em uma arco?reta de um radar ao outro n
 Exemplo:
 
 <p align="center">
-    <img src="https://imgur.com/a/U0T5xc9"/>
+    <img src="https://imgur.com/a/gmaps-rj-U0T5xc9"/>
 </p>
 
 Aqui vemos um trajeto entre dois radares de coordenadas `(-22.883354,-43.237033)` e `(-22.924788,-43.389069)` com tempo médio estimado via Google Maps. 
 
-Calculando a distância física aproximada entre esses dois pontos na superfícia da terra, temos como resultado $d_F = 16.24\,\mathrm{km}$ e supondo que percorreu com uma velocidade constante de $100\,\mathrm{km/h}$ sem obstáculos e em linha reta o tempo estimado está em torno de 9 minutos e 45 segundos. Qualquer tempo abaixo disso deve ser destacado como possível clonagem.
+Calculando a distância física aproximada entre esses dois pontos na superfícia da terra, temos como resultado $d_F = 16.24\mathrm{ km}$ e supondo que percorreu com uma velocidade constante de $100\mathrm{ km/h}$ sem obstáculos e em linha reta o tempo estimado está em torno de 9 minutos e 45 segundos. Qualquer tempo abaixo disso deve ser destacado como possível clonagem.
 
 Porém é improvável que um percurso ocorra em velocidade constante. Parte do desafio consiste em lidar com esse fato.
 <!--e seguindo as vias ainda sem obstáculos esse tempo deve ser 13 minutos e 30 segundos.-->
