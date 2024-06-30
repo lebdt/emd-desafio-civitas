@@ -6,7 +6,9 @@ Seria impossível percorrer a distância em uma arco?reta de um radar ao outro n
 
 Exemplo:
 
-![GMaps_Example]("https://imgur.com/a/gmaps-rj-U0T5xc9")
+<p align="center">
+    <img src="https://imgur.com/zawHSPS.png"/>
+</p>
 
 Aqui vemos um trajeto entre dois radares de coordenadas `(-22.883354,-43.237033)` e `(-22.924788,-43.389069)` com tempo médio estimado via Google Maps. 
 
