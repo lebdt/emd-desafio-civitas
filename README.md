@@ -151,9 +151,8 @@ JOIN
 - Função `max_int`
 
 O método mais simples de se calcular o valor máximo entre dois números inteiros $x$ e $y$ quaisquer:
-$$
-\frac{| x - y | + x + y}{2}
-$$
+
+$$\frac{| x - y | + x + y}{2}$$
 
 que se traduz em sql para
 
@@ -186,10 +185,6 @@ SELECT DISTINCT
     r1.placa
 ```
 
-<!--- Selecionar coluna `placa` de um dos conjuntos (2a linha)-->
-
-<!--Dois conjuntos são selecionados combinados e comparados-->
-
 - Combinar o conjunto de dados completo com uma cópia do mesmo conjunto
 
 A fim de comparar os elementos com todos os outros do mesmo conjunto, uma solução é produzir uma cópia e então aplicar um `JOIN` com a cópia
@@ -200,6 +195,7 @@ FROM
 JOIN
   `rj-cetrio.desafio.readings_2024_06` AS r2
 ```
+
 avaliado no valor das placas 
 
 ```sql
@@ -216,6 +212,7 @@ e evitando que ambas as velocidades comparadas sejam iguais a zero
 
 ```sql
   AND (r1.velocidade <> 0 OR r2.velocidade <> 0)
+```
 
 que significa evitar divisões por zero no caso onde o tempo diretamente comparado deve ser menor do que a aproximação da distância física entre os radares dividia pela velocidade máxima marcada por eles
 
