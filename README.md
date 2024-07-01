@@ -1,4 +1,4 @@
-# Proposta
+# Premissa
 
 ## Raciocínio
 
@@ -12,7 +12,7 @@ Exemplo:
 
 Aqui vemos um trajeto entre dois radares de coordenadas `(-22.883354,-43.237033)` e `(-22.924788,-43.389069)` com tempo médio estimado via Google Maps. 
 
-Calculando a distância física aproximada entre esses dois pontos na superfícia da terra, temos como resultado $d_F = 16.24\mathrm{ km}$ e supondo que percorreu com uma velocidade constante de $100\mathrm{ km/h}$ sem obstáculos e em linha reta o tempo estimado está em torno de 9 minutos e 45 segundos. Qualquer tempo abaixo disso deve ser destacado como possível clonagem.
+Calculando a distância física aproximada entre esses dois pontos na superfícia da terra, temos como resultado $d_F = 16.24$ $\mathrm{km}$ e supondo que percorreu com uma velocidade constante de $100$ $\mathrm{ km/h}$ sem obstáculos e em linha reta o tempo estimado está em torno de 9 minutos e 45 segundos. Qualquer tempo abaixo disso deve ser destacado como possível clonagem.
 
 Porém é improvável que um percurso ocorra em velocidade constante. Parte do desafio consiste em lidar com esse fato.
 <!--e seguindo as vias ainda sem obstáculos esse tempo deve ser 13 minutos e 30 segundos.-->
@@ -23,11 +23,11 @@ Conversão de distância entre coordenadas e coerência na comparação com a ve
 
 ## Questionamentos
 
-O que fazer com coordenadas fora dos parâmetros plausíveis? E.g. 0, 0 ou coordenadas claramente fora do escopo?
+O que fazer com coordenadas fora dos parâmetros plausíveis? E.g. `(0, 0)` ou coordenadas claramente fora do escopo?
 
 *IMPORTANTE: Determinar se os dados estão de acordo com parâmetros reais*
 
-Contudo, mesmo que não sejam, a lógica de que o critério para se produzir uma suspeita de clonagem de placa deve ser baseado no tempo que se levaria a percorrer até o próximo radar em que a placa também é identificada persiste. 
+Contudo, mesmo que não estejam de acordo com parâmetros reais, a lógica de que o critério para se produzir uma suspeita de clonagem de placa deve ser baseado no tempo que se levaria a percorrer até o próximo radar em que a placa também é identificada persiste. 
 
 
 # Análise a priori
@@ -80,17 +80,27 @@ A velocidade máxima é a mais indicada nesse caso para assegurar que o limiar d
 
 ## Possíveis Abordagens para Cálculo da Distância
 
-Aproximação para o raio da Terra. Raio médio $R = 6371\mathrm{ km}$
+Aproximação para o raio da Terra. Raio médio $R = 6371$ $\mathrm{km}$
 
 1. **Método da distância geográfica (Leva em conta a elipticidade da Terra)**
 
+$$
+R \sqrt{\left(2 \sin \left(\frac{lat_1 - lat_2}{2}\right) \cos \left(\frac{lon_1 - lon_2}{2}\right)\right)^2+\left(2 \cos\left(\frac{lat_1 + lat_2}{2}\right) \sin \left(\frac{lon_1 - lon_2}{2}\right)\right)^2}
+$$
+
 2. **Método de Haversine (esfera perfeita)**
+
+$$
+2 R \arcsin \left(\sqrt{\frac{1-\cos \left(lat_1-lat_2\right)+\cos lat_1 \cdot \cos lat_2 \cdot\left(1-\cos \left(lon_1-lon_2\right)\right)}{2}}\right)
+$$
+
+onde as latitudes e longitudes devem estar em radianos.
 
 3. **Método personalizado**
 
 O método escolhido na verdade é o método para calcular distâncias em um plano, considerando latitude e longitude como coordenadas nesse plano acrescidas de uma constante que, com o ângulo (latitude/longitude) produz arco de circunferência.
 
-Nesse caso $\pi R / 180^{\circ}$, onde $\pi$ foi aproximado para $3.14$.
+Nesse caso $\pi R / 180^{\circ}$, onde $\pi/180^{\circ}$ é a parte que inclui a conversão de graus para radianos e $\pi$ é posteriormente aproximado para $3.14$.
 
 $$
 \frac{\pi R}{180^{\circ}}\sqrt{(lat_1 - lat_2)^2 + (lon_1 - lon_2)^2}
@@ -136,6 +146,82 @@ JOIN
   WHERE delta_time(r1.datahora, r2.datahora) < distance(r1.camera_latitude, r1.camera_longitude, r2.camera_latitude, r2.camera_longitude) / max_int(r1.velocidade, r2.velocidade)
 ```
 
+## Elementos da query principal
+
+- Função `max_int`
+
+O método mais simples de se calcular o valor máximo entre dois números inteiros $x$ e $y$ quaisquer:
+$$
+\frac{| x - y | + x + y}{2}
+$$
+
+que se traduz em sql para
+
+```sql
+(ABS(x - y) + x + y) * 1/2
+```
+
+- Função `distance`
+
+```sql
+3.14*6371/180 * sqrt((lat1 - lat2) * (lat1 - lat2) + (lon1 - lon2) * (lon1 - lon2))
+```
+
+A tradução para sql da expressão da distância entre dois pontos da reta com adição do raio e conversão de graus para radianos onde `lat1` e `lon1` são as coordenadas de um ponto e `lat2` e `lon2` as coordenadas de outro ponto.
+
+- Função `delta_time`
+
+A função nativa do BigQuery para comparar elementos do tipo `TIMESTAMP` a uma certa granularidade, aqui convenientemente selecionada como `SECOND` e o uso da função `ABS()` que retorna o valor absoluto dessa comparação pois valores negativos não são apropriados para esse caso específico seguida da conversão para hora em formato `FLOAT64`.
+
+```sql
+ABS(TIMESTAMP_DIFF(end_time, start_time, SECOND)) * 1/3600
+```
+
+- A consulta
+
+Para evitar elementos repetidos na consulta
+
+```sql
+SELECT DISTINCT
+    r1.placa
+```
+
+<!--- Selecionar coluna `placa` de um dos conjuntos (2a linha)-->
+
+<!--Dois conjuntos são selecionados combinados e comparados-->
+
+- Combinar o conjunto de dados completo com uma cópia do mesmo conjunto
+
+A fim de comparar os elementos com todos os outros do mesmo conjunto, uma solução é produzir uma cópia e então aplicar um `JOIN` com a cópia
+
+```sql
+FROM
+  `rj-cetrio.desafio.readings_2024_06` AS r1
+JOIN
+  `rj-cetrio.desafio.readings_2024_06` AS r2
+```
+avaliado no valor das placas 
+
+```sql
+  ON r1.placa = r2.placa
+```
+
+evitando duplicatas
+
+```sql
+  AND r1.datahora < r2.datahora
+```
+
+e evitando que ambas as velocidades comparadas sejam iguais a zero
+
+```sql
+  AND (r1.velocidade <> 0 OR r2.velocidade <> 0)
+
+que significa evitar divisões por zero no caso onde o tempo diretamente comparado deve ser menor do que a aproximação da distância física entre os radares dividia pela velocidade máxima marcada por eles
+
+```sql
+  WHERE delta_time(r1.datahora, r2.datahora) < distance(r1.camera_latitude, r1.camera_longitude, r2.camera_latitude, r2.camera_longitude) / max_int(r1.velocidade, r2.velocidade)
+```
 
 # Queries Alternativas
 
